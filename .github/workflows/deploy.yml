@@ -19,5 +19,6 @@ jobs:
           script: |
             cd /home/ubuntu/hello-aws
             git pull origin main
-            sudo docker compose up --build -d
+            sudo docker compose down --remove-orphans
+            sudo docker compose up -d --build
             sudo docker image prune -f

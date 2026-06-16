@@ -45,10 +45,38 @@ resource "aws_security_group" "hello_sg" {
   }
 }
 
+resource "aws_iam_role" "ec2_cloudwatch_role" {
+  name = "hello-aws-ec2-cloudwatch-role"
+
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Action = "sts:AssumeRole"
+        Effect = "Allow"
+        Principal = {
+          Service = "ec2.amazonaws.com"
+        }
+      }
+    ]
+  })
+}
+
+resource "aws_iam_role_policy_attachment" "cloudwatch_agent" {
+  role       = aws_iam_role.ec2_cloudwatch_role.name
+  policy_arn = "arn:aws:iam::aws:policy/CloudWatchAgentServerPolicy"
+}
+
+resource "aws_iam_instance_profile" "ec2_cloudwatch_profile" {
+  name = "hello-aws-ec2-cloudwatch-profile"
+  role = aws_iam_role.ec2_cloudwatch_role.name
+}
+
 resource "aws_instance" "hello" {
-  ami           = data.aws_ami.ubuntu.id
-  instance_type = var.instance_type
-  key_name      = var.key_name
+  ami                  = data.aws_ami.ubuntu.id
+  instance_type        = var.instance_type
+  key_name             = var.key_name
+  iam_instance_profile = aws_iam_instance_profile.ec2_cloudwatch_profile.name
 
   vpc_security_group_ids = [
     aws_security_group.hello_sg.id
@@ -119,4 +147,53 @@ resource "aws_eip_association" "hello_assoc" {
   instance_id   = aws_instance.hello.id
   allocation_id = aws_eip.hello_ip.id
 }
+
+resource "aws_security_group" "rds_sg" {
+  name        = "hello-aws-rds-sg"
+  description = "Allow PostgreSQL from EC2"
+
+  ingress {
+    description     = "PostgreSQL from EC2"
+    from_port       = 5432
+    to_port         = 5432
+    protocol        = "tcp"
+    security_groups = [aws_security_group.hello_sg.id]
+  }
+
+  egress {
+    description = "All outbound"
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  tags = {
+    Name = "hello-aws-rds-sg"
+  }
+}
+
+resource "aws_db_instance" "hello_db" {
+  identifier        = "hello-aws-postgres"
+  engine            = "postgres"
+  engine_version    = "16"
+  instance_class    = "db.t4g.micro"
+  allocated_storage = 20
+  storage_type      = "gp3"
+
+  db_name  = "appdb"
+  username = "app"
+  password = "app12345678"
+
+  vpc_security_group_ids = [aws_security_group.rds_sg.id]
+
+  publicly_accessible = false
+  skip_final_snapshot = true
+  deletion_protection = false
+
+  tags = {
+    Name = "hello-aws-postgres"
+  }
+}
+
 
