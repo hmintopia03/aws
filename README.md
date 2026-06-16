@@ -1,17 +1,19 @@
 # Hello AWS
 
-A simple cloud deployment project demonstrating how to deploy a FastAPI application on AWS EC2 with Amazon RDS PostgreSQL, Terraform, Docker, and GitHub Actions.
+A cloud deployment project demonstrating how to deploy a containerized FastAPI application on AWS using Terraform, Docker, Amazon RDS, Amazon S3, and GitHub Actions.
 
 ## Architecture
 
+![Architecture](architecture.png)
 
+```text
 Internet
   ↓
 Nginx (EC2)
   ↓
 FastAPI (Docker)
   ↓
-RDS PostgreSQL
+Amazon RDS PostgreSQL
 
 GitHub Actions
   ↓
@@ -19,26 +21,36 @@ SSH Deploy
   ↓
 EC2
 
+FastAPI
+  ↓
+IAM Role
+  ↓
+Amazon S3
+
 Terraform
   ├─ EC2
-  ├─ EIP
+  ├─ Elastic IP
   ├─ Security Group
   ├─ IAM Role
-  └─ RDS
+  ├─ Instance Profile
+  ├─ RDS PostgreSQL
+  └─ S3 Bucket
 ```
+## S3 Upload Demo
+
+![S3 Upload Demo](s3-upload-demo.png)
 
 ## Features
 
-* FastAPI backend
-* Amazon RDS PostgreSQL
+* FastAPI REST API
+* Amazon RDS PostgreSQL integration
+* Amazon S3 file upload API
 * Nginx reverse proxy
 * Docker Compose deployment
 * Infrastructure as Code with Terraform
 * Elastic IP for stable public access
-* IAM Role for AWS service access
+* IAM Role based AWS authentication
 * Automated deployment with GitHub Actions
-* Security Group configuration for SSH and HTTP access
-
 
 ## Tech Stack
 
@@ -49,20 +61,24 @@ Terraform
 
 ### Database
 
-* PostgreSQL 16
+* Amazon RDS PostgreSQL 16
 
-### Infrastructure
+### Cloud Infrastructure
 
 * AWS EC2
+* Amazon RDS
+* Amazon S3
+* IAM
 * Elastic IP
 * Security Groups
-* Terraform
 
 ### DevOps
 
 * Docker
 * Docker Compose
+* Terraform
 * GitHub Actions
+* Nginx
 
 ## Local Development
 
@@ -76,9 +92,7 @@ Application:
 http://localhost:8000
 ```
 
-## Deployment
-
-Infrastructure is managed using Terraform.
+## Infrastructure Provisioning
 
 ```bash
 cd terraform-ec2
@@ -88,23 +102,44 @@ terraform plan
 terraform apply
 ```
 
-Application deployment is automated through GitHub Actions.
-
-Every push to the `main` branch triggers:
-
-1. SSH connection to EC2
-2. Pull latest source code
-3. Rebuild Docker containers
-4. Restart application
-
-## Terraform Resources
+Terraform provisions:
 
 * EC2 Instance
 * Security Group
 * Elastic IP
 * IAM Role and Instance Profile
 * Amazon RDS PostgreSQL
-* User Data bootstrap script
+* Amazon S3 Bucket
+
+## CI/CD Pipeline
+
+Every push to the `main` branch automatically:
+
+1. Connects to EC2 via SSH
+2. Pulls the latest source code
+3. Rebuilds Docker images
+4. Restarts application containers
+
+## S3 File Upload
+
+Upload a file:
+
+```bash
+curl -F "file=@README.md" http://<server-ip>/upload
+```
+
+Example response:
+
+```json
+{
+  "bucket": "hello-aws-hmintopia03-uploads",
+  "key": "uploads/example-file.txt"
+}
+```
+
+Files are uploaded using EC2 IAM Role credentials.
+
+No AWS access keys are stored in the application.
 
 ## Learning Goals
 
@@ -114,9 +149,11 @@ This project was created to practice:
 * Infrastructure as Code
 * Containerized deployment
 * Reverse proxy configuration
-* CI/CD automation
 * Managed database integration
+* IAM Role authentication
+* CI/CD automation
 * Cloud networking basics
+* AWS service integration
 
 ```
 ```
