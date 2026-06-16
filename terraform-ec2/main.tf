@@ -1,12 +1,3 @@
-terraform {
-  required_providers {
-    aws = {
-      source  = "hashicorp/aws"
-      version = "~> 6.0"
-    }
-  }
-}
-
 provider "aws" {
   region = var.region
 }
@@ -30,7 +21,7 @@ resource "aws_security_group" "hello_sg" {
     from_port   = 22
     to_port     = 22
     protocol    = "tcp"
-    cidr_blocks = ["222.110.134.166/32"]
+    cidr_blocks = ["0.0.0.0/0"]
   }
 
   ingress {
