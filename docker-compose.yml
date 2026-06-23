@@ -19,6 +19,6 @@ services:
       - "80:80"
     volumes:
       - ./nginx/default.conf:/etc/nginx/conf.d/default.conf:ro
-      - ./nginx/certbot:/var/www/certbotsudo docker compose up -d
+      - ./nginx/certbot:/var/www/certbot
     depends_on:
       - api

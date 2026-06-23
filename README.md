@@ -183,7 +183,9 @@ The application is accessible through a custom domain:
 
 https://hyemincho.dev
 
-DNS records are managed through Porkbun and point to the EC2 Elastic IP address.
+DNS is managed through Porkbun and points to the EC2 Elastic IP.
+
+HTTPS is enabled using Let's Encrypt SSL certificates.
 
 ## Lessons Learned
 
