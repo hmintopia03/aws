@@ -127,7 +127,7 @@ Every push to the `main` branch automatically:
 4. Restarts application containers
 
 
-## Monitoring
+## Monitoring and Incident Response
 
 The application infrastructure is monitored using Amazon CloudWatch and Amazon SNS.
 
@@ -140,15 +140,19 @@ A CPU utilization alarm is configured for the EC2 instance:
 * Evaluation Period: 2 minutes
 * Notification: Amazon SNS Email
 
-### Alarm Validation
+### Incident Simulation
 
-The monitoring setup was validated using a real load test.
+A production-like incident was intentionally created by stopping the FastAPI container behind Nginx.
 
-1. CPU load was generated on the EC2 instance using `yes > /dev/null`
-2. CloudWatch detected the CPU spike
-3. Alarm state changed from `OK` to `ALARM`
-4. SNS notification was triggered
-5. Alarm returned from `ALARM` to `OK` after load removal
+Investigation process:
+
+1. Application became unavailable and returned 502 Bad Gateway
+2. CloudWatch alarm entered the ALARM state
+3. Amazon SNS delivered an email notification
+4. Docker containers were inspected using docker ps and docker logs
+5. The failed FastAPI container was identified as the root cause
+6. The container was restarted and service availability was restored
+7. CloudWatch alarm returned to the OK state
 
 ![CloudWatch Alarm Triggered](cloudwatch-alarm-triggered.png)
 
@@ -172,6 +176,14 @@ Example response:
 Files are uploaded using EC2 IAM Role credentials.
 
 No AWS access keys are stored in the application.
+
+## Custom Domain
+
+The application is accessible through a custom domain:
+
+https://hyemincho.dev
+
+DNS records are managed through Porkbun and point to the EC2 Elastic IP address.
 
 ## Lessons Learned
 
