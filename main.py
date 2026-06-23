@@ -6,6 +6,7 @@ import os
 import uuid
 import boto3
 from fastapi import UploadFile, File
+from fastapi.responses import FileResponse
 
 app = FastAPI()
 DB_NAME = "data/users.db"
@@ -44,11 +45,9 @@ def init_db():
 
 init_db()
 
-
 @app.get("/")
 def root():
-    return {"message": "hello aws postgres"}
-
+    return FileResponse("static/index.html")
 
 @app.get("/users")
 def get_users():
